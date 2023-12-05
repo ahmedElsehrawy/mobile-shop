@@ -1,15 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   HomeOutlined,
   PlusOutlined,
-  MinusOutlined,
   FilterOutlined,
   FolderAddOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Button, theme } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const { Header, Sider, Content } = Layout;
 
@@ -18,7 +17,8 @@ interface Props {
 }
 
 const LayoutComponent = (props: Props) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -31,32 +31,37 @@ const LayoutComponent = (props: Props) => {
 
   const navigationBtnStyles = {
     background: "transparent",
+    width: "100% !important",
     outline: "none",
     border: "none",
     color: "#fff",
+    display: "flex",
+    justifyContent: "start",
+    alignItems: "center",
+    gap: "8px",
   };
 
   return (
     <Layout>
       <Sider
         trigger={null}
-        collapsible
-        collapsed={collapsed}
+        collapsible={false}
+        collapsed={false}
         style={{ padding: 8 }}
       >
         <div className="demo-logo-vertical" />
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={["1"]}
+          defaultSelectedKeys={[location.pathname]}
           items={[
             {
-              key: "1",
-              icon: <HomeOutlined />,
+              key: "/",
               label: (
                 <Button
                   style={navigationBtnStyles}
                   onClick={() => handleNavigate("/")}
+                  icon={<HomeOutlined />}
                 >
                   Home
                 </Button>
@@ -75,48 +80,38 @@ const LayoutComponent = (props: Props) => {
             //   ),
             // },
             {
-              key: "3",
-              icon: <PlusOutlined />,
+              key: "/add-product",
+
               label: (
                 <Button
                   style={navigationBtnStyles}
                   onClick={() => handleNavigate("/add-product")}
+                  icon={<PlusOutlined />}
                 >
                   Add Product
                 </Button>
               ),
             },
+
             {
-              key: "4",
-              icon: <MinusOutlined />,
-              label: (
-                <Button
-                  style={navigationBtnStyles}
-                  onClick={() => handleNavigate("/sell-product")}
-                >
-                  Sell Product
-                </Button>
-              ),
-            },
-            {
-              key: "5",
-              icon: <FolderAddOutlined />,
+              key: "/add-category",
               label: (
                 <Button
                   style={navigationBtnStyles}
                   onClick={() => handleNavigate("/add-category")}
+                  icon={<FolderAddOutlined />}
                 >
                   Add Category
                 </Button>
               ),
             },
             {
-              key: "6",
-              icon: <FilterOutlined />,
+              key: "/categories",
               label: (
                 <Button
                   style={navigationBtnStyles}
                   onClick={() => handleNavigate("/categories")}
+                  icon={<FilterOutlined />}
                 >
                   Categories
                 </Button>
@@ -126,18 +121,7 @@ const LayoutComponent = (props: Props) => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: "16px",
-              width: 64,
-              height: 64,
-            }}
-          />
-        </Header>
+        <Header style={{ padding: 0, background: colorBgContainer }}></Header>
         <Content
           style={{
             padding: 24,

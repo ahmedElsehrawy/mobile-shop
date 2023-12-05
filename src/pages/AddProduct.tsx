@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Typography,
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  Card,
-  InputNumber,
-} from "antd";
+import { Typography, Button, Form, Input, Card, InputNumber } from "antd";
 
 const { Title } = Typography;
 
@@ -26,6 +18,7 @@ type FieldType = {
   original_price?: number;
   start_price?: number;
   end_price?: number;
+  category?: string;
 };
 
 const AddProduct = () => {
@@ -35,9 +28,8 @@ const AddProduct = () => {
       <Card style={{ borderRadius: 10, padding: 20 }}>
         <Form
           name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
@@ -87,6 +79,14 @@ const AddProduct = () => {
           </Form.Item>
 
           <Form.Item<FieldType>
+            label="Category"
+            name="category"
+            rules={[{ required: true, message: "Please input the category!" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item<FieldType>
             label="Count"
             name="count"
             rules={[{ required: true, message: "Please input the count!" }]}
@@ -94,7 +94,7 @@ const AddProduct = () => {
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+          <Form.Item wrapperCol={{ span: 24 }}>
             <Button type="default" htmlType="submit">
               Add Product
             </Button>
