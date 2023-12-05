@@ -1,11 +1,9 @@
 import React from "react";
 import { Typography, Button, Form, Input, Card, InputNumber } from "antd";
+import { useMutation } from "@apollo/client";
+import { CREATEPRODUCT } from "../graphql/product";
 
 const { Title } = Typography;
-
-const onFinish = (values: any) => {
-  console.log("Success:", values);
-};
 
 const onFinishFailed = (errorInfo: any) => {
   console.log("Failed:", errorInfo);
@@ -18,10 +16,27 @@ type FieldType = {
   original_price?: number;
   start_price?: number;
   end_price?: number;
-  category?: string;
+  categoryId?: number;
 };
 
 const AddProduct = () => {
+  const [createProduct, { loading: createProductLoading }] =
+    useMutation(CREATEPRODUCT);
+
+  const onFinish = (values: any) => {
+    createProduct({
+      variables: {
+        input: {
+          ...values,
+        },
+      },
+    });
+  };
+
+  if (createProductLoading) {
+    return <div>loading...</div>;
+  }
+
   return (
     <>
       <Title>Add Product</Title>
@@ -80,10 +95,10 @@ const AddProduct = () => {
 
           <Form.Item<FieldType>
             label="Category"
-            name="category"
+            name="categoryId"
             rules={[{ required: true, message: "Please input the category!" }]}
           >
-            <Input />
+            <InputNumber style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item<FieldType>

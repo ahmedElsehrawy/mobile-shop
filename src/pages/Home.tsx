@@ -1,8 +1,9 @@
-import React from "react";
-import { Typography, Space, Table, Button, message, Popconfirm } from "antd";
+import { Typography, Table, Button, message, Popconfirm } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, MinusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { PRODUCTS } from "../graphql/product";
 
 interface DataType {
   key: string;
@@ -11,6 +12,7 @@ interface DataType {
   original_price: number;
   start_price: number;
   end_price: number;
+  count: number;
 }
 
 const confirm = (record: DataType) => {
@@ -23,37 +25,13 @@ const cancel = (e: any) => {
   console.log(e);
 };
 
-const data: DataType[] = [
-  {
-    key: "1",
-    code: "1",
-    name: "John Brown",
-    original_price: 16,
-    start_price: 20,
-    end_price: 50,
-  },
-  {
-    key: "2",
-    code: "2",
-    name: "Jim Green",
-    original_price: 16,
-    start_price: 20,
-    end_price: 50,
-  },
-  {
-    key: "3",
-    code: "3",
-    name: "Joe Black",
-    original_price: 16,
-    start_price: 20,
-    end_price: 50,
-  },
-];
-
 const { Title } = Typography;
 
 const Home = () => {
   const navigate = useNavigate();
+
+  const { data: productsData, loading } = useQuery(PRODUCTS);
+  console.log("🚀 ~ file: Home.tsx:138 ~ Home ~ data:", productsData);
 
   const columns: ColumnsType<DataType> = [
     {
@@ -81,6 +59,11 @@ const Home = () => {
       title: "end_price",
       dataIndex: "end_price",
       key: "end_price",
+    },
+    {
+      title: "count",
+      dataIndex: "count",
+      key: "count",
     },
     {
       title: "Sell Product",
@@ -118,10 +101,18 @@ const Home = () => {
     },
   ];
 
+  if (loading) {
+    return <div>loading</div>;
+  }
+
   return (
     <>
       <Title>Products</Title>
-      <Table columns={columns} dataSource={data} pagination={false} />
+      <Table
+        columns={columns}
+        dataSource={productsData?.products}
+        pagination={false}
+      />
     </>
   );
 };
