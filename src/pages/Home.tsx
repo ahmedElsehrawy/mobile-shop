@@ -1,11 +1,25 @@
-import { Typography, Table, Button, message, Popconfirm } from "antd";
+import {
+  Typography,
+  Table,
+  Button,
+  message,
+  Popconfirm,
+  Tag,
+  InputNumber,
+  Form,
+  Select,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, MinusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@apollo/client";
-import { PRODUCTS } from "../graphql/product";
+import { useMutation, useQuery } from "@apollo/client";
+import { DELETEPRODUCT, PRODUCTS } from "../graphql/product";
+import { useState } from "react";
+import { FilterOutlined } from "@ant-design/icons";
+import { CATEGORIES } from "../graphql/category";
 
 interface DataType {
+  id: number;
   key: string;
   code: string;
   name: string;
@@ -13,12 +27,8 @@ interface DataType {
   start_price: number;
   end_price: number;
   count: number;
+  category: { name: string };
 }
-
-const confirm = (record: DataType) => {
-  console.log(record);
-  message.success("Click on Yes");
-};
 
 const cancel = (e: any) => {
   message.error("Click on No");
@@ -29,9 +39,41 @@ const { Title } = Typography;
 
 const Home = () => {
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
 
-  const { data: productsData, loading } = useQuery(PRODUCTS);
+  let variables = {
+    skip: (page - 1) * 10,
+    take: 10,
+    where: {
+      categoryId: null,
+      count: null,
+    },
+  };
+
+  const {
+    data: productsData,
+    loading,
+    refetch,
+  } = useQuery(PRODUCTS, {
+    variables,
+  });
   console.log("🚀 ~ file: Home.tsx:138 ~ Home ~ data:", productsData);
+
+  const [deleteProduct, { loading: deleteProductLoading }] =
+    useMutation(DELETEPRODUCT);
+
+  const { data } = useQuery(CATEGORIES);
+
+  const confirm = (record: DataType) => {
+    deleteProduct({
+      variables: {
+        input: {
+          id: record?.id,
+        },
+      },
+      refetchQueries: [{ query: PRODUCTS, variables }],
+    });
+  };
 
   const columns: ColumnsType<DataType> = [
     {
@@ -61,10 +103,29 @@ const Home = () => {
       key: "end_price",
     },
     {
+      title: "category",
+      dataIndex: "category",
+      key: "category",
+      render: (_, record) => (
+        <Tag style={{ padding: "0 10px" }} color="blue">
+          {record.category.name}
+        </Tag>
+      ),
+    },
+    {
       title: "count",
       dataIndex: "count",
       key: "count",
+      render: (_, record) => (
+        <Tag
+          style={{ padding: "0 20px" }}
+          color={record.count > 2 ? "success" : "error"}
+        >
+          {record.count}
+        </Tag>
+      ),
     },
+
     {
       title: "Sell Product",
       key: "action",
@@ -75,7 +136,7 @@ const Home = () => {
             style={{ margin: "auto", backgroundColor: "#001529" }}
             icon={<MinusOutlined />}
             onClick={() => {
-              navigate(`/sell-product?code=${record.code}`);
+              navigate(`/sell-product?id=${record.id}`);
             }}
           >
             Sell
@@ -101,17 +162,119 @@ const Home = () => {
     },
   ];
 
-  if (loading) {
-    return <div>loading</div>;
-  }
+  const onFinish = (values: any) => {
+    console.log("Success:", values);
+
+    variables = {
+      skip: (page - 1) * 10,
+      take: 10,
+      where: {
+        categoryId: values.categoryId,
+        count: values.count,
+      },
+    };
+
+    refetch(variables);
+  };
+
+  const onFinishFailed = (errorInfo: any) => {
+    console.log("Failed:", errorInfo);
+  };
+
+  type FieldType = {
+    count?: number;
+    categoryId?: number;
+  };
+
+  const onChange = (value: string) => {
+    console.log(`selected ${value}`);
+  };
+
+  const onSearch = (value: string) => {
+    console.log("search:", value);
+  };
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
     <>
-      <Title>Products</Title>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Title>Products</Title>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Form
+            name="basic"
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Form.Item<FieldType> name="count" style={{ margin: "0 10px" }}>
+              <InputNumber placeholder="count" />
+            </Form.Item>
+            <Form.Item<FieldType> name="categoryId" style={{ marginBottom: 0 }}>
+              <Select
+                showSearch
+                placeholder="Select a category"
+                optionFilterProp="children"
+                onChange={onChange}
+                onSearch={onSearch}
+                filterOption={filterOption}
+                options={data?.categories?.map((category: any) => ({
+                  value: category?.id,
+                  label: category?.name,
+                }))}
+                allowClear
+              />
+            </Form.Item>
+
+            <Form.Item style={{ margin: "0 5px" }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<FilterOutlined />}
+                style={{ backgroundColor: "#001529" }}
+              >
+                Filter
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
+      </div>
       <Table
         columns={columns}
-        dataSource={productsData?.products}
-        pagination={false}
+        dataSource={productsData?.products?.nodes}
+        loading={loading || deleteProductLoading}
+        scroll={{ x: 400 }}
+        pagination={
+          productsData?.products?.count > 10
+            ? {
+                position: ["bottomCenter"],
+                pageSize: 10,
+                current: page,
+                total: productsData?.products?.count,
+                onChange: (pageNumber) => setPage(pageNumber),
+              }
+            : false
+        }
       />
     </>
   );

@@ -1,11 +1,9 @@
-import React from "react";
-import { Typography, Button, Form, Input, Card, InputNumber } from "antd";
+import { Typography, Button, Form, Input, Card } from "antd";
+import { useMutation } from "@apollo/client";
+import { CREATECATEGORY } from "../graphql/category";
+import Spinner from "../components/spinner";
 
 const { Title } = Typography;
-
-const onFinish = (values: any) => {
-  console.log("Success:", values);
-};
 
 const onFinishFailed = (errorInfo: any) => {
   console.log("Failed:", errorInfo);
@@ -16,6 +14,23 @@ type FieldType = {
 };
 
 const AddCategory = () => {
+  const [addCategory, { loading }] = useMutation(CREATECATEGORY);
+
+  const onFinish = (values: any) => {
+    console.log("Success:", values);
+    addCategory({
+      variables: {
+        input: {
+          ...values,
+        },
+      },
+    });
+  };
+
+  if (loading) {
+    return <Spinner />;
+  }
+
   return (
     <>
       <Title>Add Category</Title>

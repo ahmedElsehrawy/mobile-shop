@@ -1,47 +1,37 @@
-import React from "react";
-import { Typography, Space, Table, Button, message, Popconfirm } from "antd";
+import { Typography, Table, message, Popconfirm } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { DeleteOutlined, MinusOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { DeleteOutlined } from "@ant-design/icons";
+import { useMutation, useQuery } from "@apollo/client";
+import { CATEGORIES, DELETECATEGORY } from "../graphql/category";
 
 interface DataType {
   key: string;
   id: string;
   name: string;
+  Product: any;
 }
-
-const confirm = (record: DataType) => {
-  console.log(record);
-  message.success("Click on Yes");
-};
 
 const cancel = (e: any) => {
   message.error("Click on No");
   console.log(e);
 };
 
-const data: DataType[] = [
-  {
-    key: "1",
-    id: "1",
-    name: "John Brown",
-  },
-  {
-    key: "2",
-    id: "2",
-    name: "Jim Green",
-  },
-  {
-    key: "3",
-    id: "3",
-    name: "Joe Black",
-  },
-];
-
 const { Title } = Typography;
 
 const Categories = () => {
-  const navigate = useNavigate();
+  const { data, loading } = useQuery(CATEGORIES);
+  const [deleteCategory, { loading: deleteCategoryLoading }] =
+    useMutation(DELETECATEGORY);
+
+  const confirm = (record: DataType) => {
+    deleteCategory({
+      variables: {
+        input: {
+          id: record?.id,
+        },
+      },
+    });
+  };
 
   const columns: ColumnsType<DataType> = [
     {
@@ -67,17 +57,33 @@ const Categories = () => {
           onCancel={cancel}
           okText="Yes"
           cancelText="No"
+          disabled={record?.Product.length > 0}
         >
-          <DeleteOutlined style={{ color: "#ff7875", cursor: "pointer" }} />
+          <DeleteOutlined
+            style={{
+              color: record?.Product.length > 0 ? "#ddd" : "#ff7875",
+              cursor: "pointer",
+            }}
+          />
         </Popconfirm>
       ),
     },
   ];
 
+  let finishData = data?.categories?.map((category: any) => ({
+    ...category,
+    key: category.id,
+  }));
+
   return (
     <>
       <Title>Categories</Title>
-      <Table columns={columns} dataSource={data} pagination={false} />
+      <Table
+        columns={columns}
+        dataSource={finishData}
+        loading={loading || deleteCategoryLoading}
+        pagination={false}
+      />
     </>
   );
 };

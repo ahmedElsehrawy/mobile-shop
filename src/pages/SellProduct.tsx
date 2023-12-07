@@ -1,11 +1,10 @@
+import { useMutation, useQuery } from "@apollo/client";
 import { Typography, Card, Button, Form, Select, InputNumber } from "antd";
 import { useSearchParams } from "react-router-dom";
+import { GETONEPRODUCT, PRODUCTS, SELLPRODUCT } from "../graphql/product";
+import Spinner from "../components/spinner";
 
 const { Title } = Typography;
-
-const onFinish = (values: any) => {
-  console.log("Success:", values);
-};
 
 const onFinishFailed = (errorInfo: any) => {
   console.log("Failed:", errorInfo);
@@ -17,10 +16,6 @@ enum Method {
   END,
 }
 
-const handleChange = (value: string) => {
-  console.log(`selected ${value}`);
-};
-
 type FieldType = {
   count?: number;
   method?: Method;
@@ -28,12 +23,48 @@ type FieldType = {
 
 const SellProduct = () => {
   const [searchParams] = useSearchParams();
-  console.log(
-    "🚀 ~ file: sellProduct.tsx:9 ~ SellProduct ~ searchParams:",
-    searchParams.get("code")
-  );
 
-  let code = searchParams.get("code");
+  let id = searchParams.get("id");
+
+  const [sellProduct, { loading: sellProductLoading }] =
+    useMutation(SELLPRODUCT);
+
+  const { data, loading } = useQuery(GETONEPRODUCT, {
+    variables: {
+      where: {
+        id: id && +id,
+      },
+    },
+  });
+  console.log("🚀 ~ file: sellProduct.tsx:38 ~ SellProduct ~ data:", data);
+
+  let variables = {
+    skip: 0,
+    take: 10,
+    where: {
+      categoryId: null,
+      count: null,
+    },
+  };
+
+  const onFinish = (values: any) => {
+    console.log("Success:", values);
+    id &&
+      sellProduct({
+        variables: {
+          input: {
+            ...values,
+            id: +id,
+          },
+        },
+        refetchQueries: [{ query: PRODUCTS, variables }],
+      });
+  };
+
+  if (loading || sellProductLoading) {
+    return <Spinner />;
+  }
+
   return (
     <>
       <Card>
@@ -45,10 +76,14 @@ const SellProduct = () => {
             marginBottom: 24,
           }}
         >
-          <Title level={4}>Iphone</Title>
-          <Title level={4}>Original Price: 50</Title>
-          <Title level={4}>Start Price: 90</Title>
-          <Title level={4}>End Price: 70</Title>
+          <Title level={4}>{data?.getOneProduct?.name}</Title>
+          <Title level={4}>
+            Original Price: {data?.getOneProduct?.original_price}
+          </Title>
+          <Title level={4}>
+            Start Price: {data?.getOneProduct?.start_price}
+          </Title>
+          <Title level={4}>End Price: {data?.getOneProduct?.end_price}</Title>
         </div>
         <Form
           name="basic"
@@ -60,25 +95,10 @@ const SellProduct = () => {
           autoComplete="off"
         >
           <Form.Item<FieldType>
-            name="method"
-            rules={[{ required: true, message: "Please input the end price!" }]}
-          >
-            <Select
-              defaultValue="ORIGINAL"
-              onChange={handleChange}
-              options={[
-                { value: "ORIGINAL", label: "Original" },
-                { value: "START", label: "Start" },
-                { value: "END", label: "End" },
-              ]}
-            />
-          </Form.Item>
-
-          <Form.Item<FieldType>
             name="count"
             rules={[{ required: true, message: "Please input the count!" }]}
           >
-            <InputNumber defaultValue={1} style={{ width: "100%" }} />
+            <InputNumber defaultValue={0} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item>

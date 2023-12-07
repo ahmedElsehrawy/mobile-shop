@@ -1,7 +1,16 @@
-import React from "react";
-import { Typography, Button, Form, Input, Card, InputNumber } from "antd";
-import { useMutation } from "@apollo/client";
-import { CREATEPRODUCT } from "../graphql/product";
+import {
+  Typography,
+  Button,
+  Form,
+  Input,
+  Card,
+  InputNumber,
+  Select,
+} from "antd";
+import { useMutation, useQuery } from "@apollo/client";
+import { CREATEPRODUCT, PRODUCTS } from "../graphql/product";
+import { CATEGORIES } from "../graphql/category";
+import Spinner from "../components/spinner";
 
 const { Title } = Typography;
 
@@ -23,6 +32,18 @@ const AddProduct = () => {
   const [createProduct, { loading: createProductLoading }] =
     useMutation(CREATEPRODUCT);
 
+  const { data, loading } = useQuery(CATEGORIES);
+  console.log("🚀 ~ file: AddProduct.tsx:29 ~ AddProduct ~ data:", data);
+
+  let variables = {
+    skip: 0,
+    take: 10,
+    where: {
+      categoryId: null,
+      count: null,
+    },
+  };
+
   const onFinish = (values: any) => {
     createProduct({
       variables: {
@@ -30,12 +51,25 @@ const AddProduct = () => {
           ...values,
         },
       },
+      refetchQueries: [{ query: PRODUCTS, variables }],
     });
   };
 
   if (createProductLoading) {
-    return <div>loading...</div>;
+    return <Spinner />;
   }
+
+  const onChange = (value: string) => {
+    console.log(`selected ${value}`);
+  };
+
+  const onSearch = (value: string) => {
+    console.log("search:", value);
+  };
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
     <>
@@ -98,7 +132,19 @@ const AddProduct = () => {
             name="categoryId"
             rules={[{ required: true, message: "Please input the category!" }]}
           >
-            <InputNumber style={{ width: "100%" }} />
+            {/* <InputNumber style={{ width: "100%" }} /> */}
+            <Select
+              showSearch
+              placeholder="Select a category"
+              optionFilterProp="children"
+              onChange={onChange}
+              onSearch={onSearch}
+              filterOption={filterOption}
+              options={data?.categories?.map((category: any) => ({
+                value: category?.id,
+                label: category?.name,
+              }))}
+            />
           </Form.Item>
 
           <Form.Item<FieldType>
