@@ -14,6 +14,8 @@ import { GETONEPRODUCT, PRODUCTS, SELLPRODUCT } from "../graphql/product";
 import Spinner from "../components/spinner";
 import { useState } from "react";
 import { MAKE_PRODUCT_SOLD } from "../graphql/sold-products";
+import CustomCard from "../components/Common/CustomCard";
+import styled from "styled-components";
 
 const { Title } = Typography;
 
@@ -117,24 +119,14 @@ const SellProduct = () => {
 
   return (
     <>
-      <Card>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <Title level={4}>{data?.getOneProduct?.name}</Title>
-          <Title level={4}>
-            Original Price: {data?.getOneProduct?.original_price}
-          </Title>
-          <Title level={4}>
-            Start Price: {data?.getOneProduct?.start_price}
-          </Title>
-          <Title level={4}>End Price: {data?.getOneProduct?.end_price}</Title>
-        </div>
+      <Title>Sell Product </Title>
+      <CustomCard>
+        <Details>
+          <p>{data?.getOneProduct?.name}</p>
+          <p>Original Price: {data?.getOneProduct?.original_price}</p>
+          <p>Start Price: {data?.getOneProduct?.start_price}</p>
+          <p>End Price: {data?.getOneProduct?.end_price}</p>
+        </Details>
         <Form
           name="basic"
           labelCol={{ span: 24 }}
@@ -195,9 +187,27 @@ const SellProduct = () => {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </CustomCard>
     </>
   );
 };
+
+const Details = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 18px;
+  font-weight: 600;
+
+  @media screen and (max-width: 1024px) {
+    font-size: 14px;
+  }
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    font-size: 16px;
+  }
+`;
 
 export default SellProduct;
