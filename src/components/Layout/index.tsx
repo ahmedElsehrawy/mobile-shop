@@ -3,6 +3,7 @@ import {
   PlusOutlined,
   FilterOutlined,
   FolderAddOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Button, theme } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -28,23 +29,28 @@ const LayoutComponent = (props: Props) => {
 
   const navigationBtnStyles = {
     background: "transparent",
-    width: "100% !important",
     outline: "none",
     border: "none",
     color: "#fff",
-    display: "flex",
-    justifyContent: "start",
-    alignItems: "center",
+    display: "block",
     gap: "8px",
+    height: "80px",
+    width: "100% !important",
   };
 
   return (
-    <Layout>
+    <Layout style={{ position: "relative" }}>
       <Sider
         trigger={null}
         collapsible={false}
         collapsed={false}
-        style={{ padding: 8 }}
+        style={{
+          padding: 8,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          bottom: 0,
+        }}
       >
         <div className="demo-logo-vertical" />
         <Menu
@@ -60,22 +66,11 @@ const LayoutComponent = (props: Props) => {
                   onClick={() => handleNavigate("/")}
                   icon={<HomeOutlined />}
                 >
-                  Home
+                  Products
                 </Button>
               ),
             },
-            // {
-            //   key: "2",
-            //   icon: <UnorderedListOutlined />,
-            //   label: (
-            //     <Button
-            //       style={navigationBtnStyles}
-            //       onClick={() => handleNavigate("/products")}
-            //     >
-            //       Products
-            //     </Button>
-            //   ),
-            // },
+
             {
               key: "/add-product",
 
@@ -114,11 +109,31 @@ const LayoutComponent = (props: Props) => {
                 </Button>
               ),
             },
+            {
+              key: "/sold-products",
+              label: (
+                <Button
+                  style={navigationBtnStyles}
+                  onClick={() => handleNavigate("/sold-products")}
+                  icon={<DollarOutlined />}
+                >
+                  Sold Products
+                </Button>
+              ),
+            },
           ]}
         />
       </Sider>
-      <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}></Header>
+      <Layout
+        style={{
+          minHeight: "100vh",
+          position: "absolute",
+          left: "200px",
+          right: 0,
+          top: 0,
+          width: "calc(100% - 200px)",
+        }}
+      >
         <Content
           style={{
             padding: 24,

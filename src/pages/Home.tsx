@@ -17,6 +17,7 @@ import { DELETEPRODUCT, PRODUCTS } from "../graphql/product";
 import { useState } from "react";
 import { FilterOutlined } from "@ant-design/icons";
 import { CATEGORIES } from "../graphql/category";
+import styled from "styled-components";
 
 interface DataType {
   id: number;
@@ -40,8 +41,14 @@ const { Title } = Typography;
 const Home = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [count, setCount] = useState<number | null>(null);
 
-  let variables = {
+  let variables: {
+    skip: number;
+    take: number;
+    where: { categoryId: number | null; count: number | null };
+  } = {
     skip: (page - 1) * 10,
     take: 10,
     where: {
@@ -80,7 +87,7 @@ const Home = () => {
       title: "code",
       dataIndex: "code",
       key: "code",
-      render: (text) => <a>{text}</a>,
+      render: (text) => <span style={{ color: "#00f" }}>{text}</span>,
     },
     {
       title: "name",
@@ -133,11 +140,15 @@ const Home = () => {
         <div style={{ width: "100%", textAlign: "center" }}>
           <Button
             type="primary"
-            style={{ margin: "auto", backgroundColor: "#001529" }}
+            style={{
+              margin: "auto",
+              backgroundColor: record?.count === 0 ? "#a0a0a0" : "#001529",
+            }}
             icon={<MinusOutlined />}
             onClick={() => {
               navigate(`/sell-product?id=${record.id}`);
             }}
+            disabled={record?.count === 0}
           >
             Sell
           </Button>
@@ -169,8 +180,8 @@ const Home = () => {
       skip: (page - 1) * 10,
       take: 10,
       where: {
-        categoryId: values.categoryId,
-        count: values.count,
+        categoryId: categoryId,
+        count: count,
       },
     };
 
@@ -188,6 +199,8 @@ const Home = () => {
 
   const onChange = (value: string) => {
     console.log(`selected ${value}`);
+    setPage(1);
+    setCategoryId(+value);
   };
 
   const onSearch = (value: string) => {
@@ -200,21 +213,9 @@ const Home = () => {
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <TopBar>
         <Title>Products</Title>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <FilterContainer>
           <Form
             name="basic"
             initialValues={{ remember: true }}
@@ -228,7 +229,13 @@ const Home = () => {
             }}
           >
             <Form.Item<FieldType> name="count" style={{ margin: "0 10px" }}>
-              <InputNumber placeholder="count" />
+              <InputNumber
+                placeholder="count"
+                onChange={(value: number | null) => {
+                  setPage(1);
+                  setCount(value);
+                }}
+              />
             </Form.Item>
             <Form.Item<FieldType> name="categoryId" style={{ marginBottom: 0 }}>
               <Select
@@ -257,8 +264,8 @@ const Home = () => {
               </Button>
             </Form.Item>
           </Form>
-        </div>
-      </div>
+        </FilterContainer>
+      </TopBar>
       <Table
         columns={columns}
         dataSource={productsData?.products?.nodes}
@@ -270,7 +277,10 @@ const Home = () => {
                 position: ["bottomCenter"],
                 pageSize: 10,
                 current: page,
-                total: productsData?.products?.count,
+                total:
+                  count || categoryId
+                    ? productsData?.products?.nodes?.length
+                    : productsData?.products?.count,
                 onChange: (pageNumber) => setPage(pageNumber),
               }
             : false
@@ -279,5 +289,22 @@ const Home = () => {
     </>
   );
 };
+
+export const TopBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
 
 export default Home;

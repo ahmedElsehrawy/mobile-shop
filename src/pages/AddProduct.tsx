@@ -11,6 +11,7 @@ import { useMutation, useQuery } from "@apollo/client";
 import { CREATEPRODUCT, PRODUCTS } from "../graphql/product";
 import { CATEGORIES } from "../graphql/category";
 import Spinner from "../components/spinner";
+import CustomCard from "../components/Common/CustomCard";
 
 const { Title } = Typography;
 
@@ -32,7 +33,7 @@ const AddProduct = () => {
   const [createProduct, { loading: createProductLoading }] =
     useMutation(CREATEPRODUCT);
 
-  const { data, loading } = useQuery(CATEGORIES);
+  const { data } = useQuery(CATEGORIES);
   console.log("🚀 ~ file: AddProduct.tsx:29 ~ AddProduct ~ data:", data);
 
   let variables = {
@@ -59,13 +60,6 @@ const AddProduct = () => {
     return <Spinner />;
   }
 
-  const onChange = (value: string) => {
-    console.log(`selected ${value}`);
-  };
-
-  const onSearch = (value: string) => {
-    console.log("search:", value);
-  };
   const filterOption = (
     input: string,
     option?: { label: string; value: string }
@@ -74,7 +68,7 @@ const AddProduct = () => {
   return (
     <>
       <Title>Add Product</Title>
-      <Card style={{ borderRadius: 10, padding: 20 }}>
+      <CustomCard>
         <Form
           name="basic"
           labelCol={{ span: 24 }}
@@ -132,13 +126,10 @@ const AddProduct = () => {
             name="categoryId"
             rules={[{ required: true, message: "Please input the category!" }]}
           >
-            {/* <InputNumber style={{ width: "100%" }} /> */}
             <Select
               showSearch
               placeholder="Select a category"
               optionFilterProp="children"
-              onChange={onChange}
-              onSearch={onSearch}
               filterOption={filterOption}
               options={data?.categories?.map((category: any) => ({
                 value: category?.id,
@@ -161,7 +152,7 @@ const AddProduct = () => {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </CustomCard>
     </>
   );
 };

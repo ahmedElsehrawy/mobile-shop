@@ -1,7 +1,8 @@
 import { Typography, Button, Form, Input, Card } from "antd";
 import { useMutation } from "@apollo/client";
-import { CREATECATEGORY } from "../graphql/category";
+import { CATEGORIES, CREATECATEGORY } from "../graphql/category";
 import Spinner from "../components/spinner";
+import CustomCard from "../components/Common/CustomCard";
 
 const { Title } = Typography;
 
@@ -24,6 +25,7 @@ const AddCategory = () => {
           ...values,
         },
       },
+      refetchQueries: [{ query: CATEGORIES }],
     });
   };
 
@@ -34,7 +36,7 @@ const AddCategory = () => {
   return (
     <>
       <Title>Add Category</Title>
-      <Card style={{ borderRadius: 10, padding: 20 }}>
+      <CustomCard>
         <Form
           name="basic"
           labelCol={{ span: 24 }}
@@ -58,7 +60,7 @@ const AddCategory = () => {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </CustomCard>
     </>
   );
 };

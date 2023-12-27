@@ -30,6 +30,7 @@ const Categories = () => {
           id: record?.id,
         },
       },
+      refetchQueries: [{ query: CATEGORIES }],
     });
   };
 
