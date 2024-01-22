@@ -1,25 +1,17 @@
-import {
-  Typography,
-  Button,
-  Form,
-  Input,
-  Card,
-  InputNumber,
-  Select,
-} from "antd";
+import { Button, Form, Input, InputNumber, Select } from "antd";
 import { useMutation, useQuery } from "@apollo/client";
-import { CREATEPRODUCT, PRODUCTS } from "../graphql/product";
-import { CATEGORIES } from "../graphql/category";
-import Spinner from "../components/spinner";
-import CustomCard from "../components/Common/CustomCard";
-
-const { Title } = Typography;
+import { CREATEPRODUCT, PRODUCTS } from "../../../apollo/product";
+import { CATEGORIES } from "../../../apollo/category";
+import Spinner from "../../../components/common/spinner";
+import CustomCard from "../../../components/common/CustomCard";
+import StyledTitle from "../../../components/common/StyledTitle";
+import { useNavigate } from "react-router-dom";
 
 const onFinishFailed = (errorInfo: any) => {
   console.log("Failed:", errorInfo);
 };
 
-type FieldType = {
+export type FieldType = {
   code?: string;
   count?: number;
   name?: string;
@@ -30,6 +22,7 @@ type FieldType = {
 };
 
 const AddProduct = () => {
+  const navigate = useNavigate();
   const [createProduct, { loading: createProductLoading }] =
     useMutation(CREATEPRODUCT);
 
@@ -52,6 +45,9 @@ const AddProduct = () => {
           ...values,
         },
       },
+      onCompleted: () => {
+        navigate("/products");
+      },
       refetchQueries: [{ query: PRODUCTS, variables }],
     });
   };
@@ -67,8 +63,8 @@ const AddProduct = () => {
 
   return (
     <>
-      <Title>Add Product</Title>
       <CustomCard>
+        <StyledTitle>Add Product</StyledTitle>
         <Form
           name="basic"
           labelCol={{ span: 24 }}

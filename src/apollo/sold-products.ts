@@ -8,6 +8,7 @@ export const GET_SOLD_PRODUCTS = gql`
       nodes {
         id
         salePrice
+        quantity
         createdAt
         product {
           code
@@ -28,6 +29,19 @@ export const MAKE_PRODUCT_SOLD = gql`
       }
       salePrice
       createdAt
+    }
+  }
+`;
+
+export const SOLD_PRODUCTS_CHARTS = gql`
+  query soldProductsCharts {
+    soldProductsCharts {
+      soldProuctsCharts {
+        from
+        to
+        totalOriginalPrice
+        totalSaledPrice
+      }
     }
   }
 `;

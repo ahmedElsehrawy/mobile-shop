@@ -1,151 +1,58 @@
-import {
-  HomeOutlined,
-  PlusOutlined,
-  FilterOutlined,
-  FolderAddOutlined,
-  DollarOutlined,
-} from "@ant-design/icons";
-import { Layout, Menu, Button, theme } from "antd";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Layout, theme } from "antd";
+import SiderBar from "./siderbar";
+import styled from "styled-components";
+import { useSideBarWidth } from "../../hooks/useSideBarWidth";
 
-const { Header, Sider, Content } = Layout;
+const { Content } = Layout;
 
 interface Props {
   children: any;
 }
 
 const LayoutComponent = (props: Props) => {
-  const location = useLocation();
-
   const {
     token: { colorBgContainer },
   } = theme.useToken();
 
-  const navigate = useNavigate();
-
-  const handleNavigate = (link: string) => {
-    navigate(link);
-  };
-
-  const navigationBtnStyles = {
-    background: "transparent",
-    outline: "none",
-    border: "none",
-    color: "#fff",
-    display: "block",
-    gap: "8px",
-    height: "80px",
-    width: "100% !important",
-  };
+  const [sideBarWidth] = useSideBarWidth();
 
   return (
-    <Layout style={{ position: "relative" }}>
-      <Sider
-        trigger={null}
-        collapsible={false}
-        collapsed={false}
+    <StyledLayout>
+      <SiderBar />
+      <StyledContent
+        contentShift={sideBarWidth}
         style={{
-          padding: 8,
-          position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
+          background: colorBgContainer,
         }}
       >
-        <div className="demo-logo-vertical" />
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={[location.pathname]}
-          items={[
-            {
-              key: "/",
-              label: (
-                <Button
-                  style={navigationBtnStyles}
-                  onClick={() => handleNavigate("/")}
-                  icon={<HomeOutlined />}
-                >
-                  Products
-                </Button>
-              ),
-            },
-
-            {
-              key: "/add-product",
-
-              label: (
-                <Button
-                  style={navigationBtnStyles}
-                  onClick={() => handleNavigate("/add-product")}
-                  icon={<PlusOutlined />}
-                >
-                  Add Product
-                </Button>
-              ),
-            },
-
-            {
-              key: "/add-category",
-              label: (
-                <Button
-                  style={navigationBtnStyles}
-                  onClick={() => handleNavigate("/add-category")}
-                  icon={<FolderAddOutlined />}
-                >
-                  Add Category
-                </Button>
-              ),
-            },
-            {
-              key: "/categories",
-              label: (
-                <Button
-                  style={navigationBtnStyles}
-                  onClick={() => handleNavigate("/categories")}
-                  icon={<FilterOutlined />}
-                >
-                  Categories
-                </Button>
-              ),
-            },
-            {
-              key: "/sold-products",
-              label: (
-                <Button
-                  style={navigationBtnStyles}
-                  onClick={() => handleNavigate("/sold-products")}
-                  icon={<DollarOutlined />}
-                >
-                  Sold Products
-                </Button>
-              ),
-            },
-          ]}
-        />
-      </Sider>
-      <Layout
-        style={{
-          minHeight: "100vh",
-          position: "absolute",
-          left: "200px",
-          right: 0,
-          top: 0,
-          width: "calc(100% - 200px)",
-        }}
-      >
-        <Content
-          style={{
-            padding: 24,
-            minHeight: "calc(100vh - 64px)",
-            background: colorBgContainer,
-          }}
-        >
-          {props.children}
-        </Content>
-      </Layout>
-    </Layout>
+        {props.children}
+      </StyledContent>
+    </StyledLayout>
   );
 };
+
+const StyledLayout = styled(Layout)`
+  min-height: 100vh;
+  position: relative;
+  width: 100vw;
+  padding: 0 !important;
+  margin: 0 !important;
+`;
+
+interface StyledContentProps {
+  contentShift: any;
+}
+
+const StyledContent = styled(Content)<StyledContentProps>`
+  padding: 24px;
+  width: ${(contentShift) =>
+    `calc(100vw - ${contentShift.contentShift}px) !important`};
+  position: fixed !important;
+  left: ${(contentShift) => contentShift.contentShift};
+  top: 0px !important;
+  right: 0px !important;
+  height: 100vh;
+  overflow-y: auto;
+`;
 
 export default LayoutComponent;

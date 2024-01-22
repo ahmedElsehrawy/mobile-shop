@@ -27,6 +27,12 @@ export const GETONEPRODUCT = gql`
       start_price
       original_price
       end_price
+      code
+      count
+      category {
+        name
+        id
+      }
     }
   }
 `;
@@ -61,6 +67,23 @@ export const SELLPRODUCT = gql`
       count
       name
       id
+    }
+  }
+`;
+
+export const UPDATEPRODUCT = gql`
+  mutation Mutation($input: updateProductInput!, $where: updateProductWhere!) {
+    updateProduct(input: $input, where: $where) {
+      name
+      start_price
+      original_price
+      end_price
+      code
+      count
+      category {
+        name
+        id
+      }
     }
   }
 `;

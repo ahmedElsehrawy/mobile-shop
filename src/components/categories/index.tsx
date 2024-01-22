@@ -1,8 +1,11 @@
-import { Typography, Table, message, Popconfirm } from "antd";
+import { Table, Popconfirm } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@apollo/client";
-import { CATEGORIES, DELETECATEGORY } from "../graphql/category";
+import { CATEGORIES, DELETECATEGORY } from "../../apollo/category";
+import StyledTitle from "../common/StyledTitle";
+import { useState } from "react";
+import AlertComponent from "../common/Alert";
 
 interface DataType {
   key: string;
@@ -11,17 +14,19 @@ interface DataType {
   Product: any;
 }
 
-const cancel = (e: any) => {
-  message.error("Click on No");
-  console.log(e);
-};
-
-const { Title } = Typography;
-
-const Categories = () => {
+const CategoriesComponent = () => {
   const { data, loading } = useQuery(CATEGORIES);
   const [deleteCategory, { loading: deleteCategoryLoading }] =
     useMutation(DELETECATEGORY);
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: any;
+    isAlertOpen: boolean;
+  }>({
+    message: "",
+    type: undefined,
+    isAlertOpen: false,
+  });
 
   const confirm = (record: DataType) => {
     deleteCategory({
@@ -29,6 +34,20 @@ const Categories = () => {
         input: {
           id: record?.id,
         },
+      },
+      onCompleted: () => {
+        setAlert({
+          message: `category deleted successfully`,
+          type: "success",
+          isAlertOpen: true,
+        });
+      },
+      onError: () => {
+        setAlert({
+          message: `this category has some products related`,
+          type: "error",
+          isAlertOpen: true,
+        });
       },
       refetchQueries: [{ query: CATEGORIES }],
     });
@@ -39,7 +58,7 @@ const Categories = () => {
       title: "id",
       dataIndex: "id",
       key: "id",
-      render: (text) => <a>{text}</a>,
+      render: (text) => <span>{text}</span>,
     },
     {
       title: "name",
@@ -52,17 +71,15 @@ const Categories = () => {
       key: "action",
       render: (_, record) => (
         <Popconfirm
-          title="Delete the task"
-          description="Are you sure to delete this task?"
+          title="Delete this category"
+          description="Are you sure to delete this category?"
           onConfirm={() => confirm(record)}
-          onCancel={cancel}
           okText="Yes"
           cancelText="No"
-          disabled={record?.Product.length > 0}
         >
           <DeleteOutlined
             style={{
-              color: record?.Product.length > 0 ? "#ddd" : "#ff7875",
+              color: "#ff7875",
               cursor: "pointer",
             }}
           />
@@ -78,7 +95,10 @@ const Categories = () => {
 
   return (
     <>
-      <Title>Categories</Title>
+      {alert.isAlertOpen && (
+        <AlertComponent alert={alert} setAlert={setAlert} />
+      )}
+      <StyledTitle>Categories</StyledTitle>
       <Table
         columns={columns}
         dataSource={finishData}
@@ -89,4 +109,4 @@ const Categories = () => {
   );
 };
 
-export default Categories;
+export default CategoriesComponent;

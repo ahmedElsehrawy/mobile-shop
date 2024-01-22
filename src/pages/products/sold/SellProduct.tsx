@@ -1,23 +1,16 @@
 import { useMutation, useQuery } from "@apollo/client";
-import {
-  Typography,
-  Card,
-  Button,
-  Form,
-  Select,
-  InputNumber,
-  Switch,
-  Space,
-} from "antd";
-import { useSearchParams } from "react-router-dom";
-import { GETONEPRODUCT, PRODUCTS, SELLPRODUCT } from "../graphql/product";
-import Spinner from "../components/spinner";
+import { Button, Form, Select, InputNumber, Switch, Space } from "antd";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { GETONEPRODUCT, PRODUCTS, SELLPRODUCT } from "../../../apollo/product";
+import Spinner from "../../../components/common/spinner";
 import { useState } from "react";
-import { MAKE_PRODUCT_SOLD } from "../graphql/sold-products";
-import CustomCard from "../components/Common/CustomCard";
+import {
+  GET_SOLD_PRODUCTS,
+  MAKE_PRODUCT_SOLD,
+} from "../../../apollo/sold-products";
+import CustomCard from "../../../components/common/CustomCard";
 import styled from "styled-components";
-
-const { Title } = Typography;
+import StyledTitle from "../../../components/common/StyledTitle";
 
 const onFinishFailed = (errorInfo: any) => {
   console.log("Failed:", errorInfo);
@@ -36,6 +29,7 @@ type FieldType = {
 };
 
 const SellProduct = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isAutoPrice, setIsAutoPrice] = useState<boolean>(true);
 
@@ -65,9 +59,9 @@ const SellProduct = () => {
     },
   };
 
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     id &&
-      sellProduct({
+      (await sellProduct({
         variables: {
           input: {
             count: values.count,
@@ -75,17 +69,31 @@ const SellProduct = () => {
           },
         },
         refetchQueries: [{ query: PRODUCTS, variables }],
-      });
+      }));
 
     id &&
-      makeProductSold({
+      (await makeProductSold({
         variables: {
           input: {
             productId: +id,
             salePrice: values.method || values.price,
+            quantity: values.count,
           },
         },
-      });
+        refetchQueries: [
+          {
+            query: GET_SOLD_PRODUCTS,
+            variables: {
+              input: {
+                createdAt: undefined,
+              },
+            },
+          },
+        ],
+        onCompleted: () => {
+          navigate("/sold-products");
+        },
+      }));
   };
 
   //select
@@ -119,8 +127,8 @@ const SellProduct = () => {
 
   return (
     <>
-      <Title>Sell Product </Title>
       <CustomCard>
+        <StyledTitle>Sell Product </StyledTitle>
         <Details>
           <p>{data?.getOneProduct?.name}</p>
           <p>Original Price: {data?.getOneProduct?.original_price}</p>
@@ -138,9 +146,19 @@ const SellProduct = () => {
         >
           <Form.Item<FieldType>
             name="count"
-            rules={[{ required: true, message: "Please input the count!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Please input the count!",
+              },
+            ]}
           >
-            <InputNumber defaultValue={0} style={{ width: "100%" }} />
+            <InputNumber
+              defaultValue={1}
+              style={{ width: "100%" }}
+              min={1}
+              max={data?.getOneProduct?.count}
+            />
           </Form.Item>
           <Space
             style={{
@@ -152,7 +170,7 @@ const SellProduct = () => {
               justifyContent: "space-between",
             }}
           >
-            <label>{isAutoPrice ? "Method" : "Price"}</label>
+            <label>{isAutoPrice ? "Price on Method" : "Manual Price"}</label>
             <Switch checked={isAutoPrice} onChange={onSwitchChange} />
           </Space>
           {isAutoPrice ? (

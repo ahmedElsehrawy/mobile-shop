@@ -1,10 +1,10 @@
-import { Typography, Button, Form, Input, Card } from "antd";
+import { Button, Form, Input } from "antd";
 import { useMutation } from "@apollo/client";
-import { CATEGORIES, CREATECATEGORY } from "../graphql/category";
-import Spinner from "../components/spinner";
-import CustomCard from "../components/Common/CustomCard";
-
-const { Title } = Typography;
+import Spinner from "../../common/spinner";
+import { CATEGORIES, CREATECATEGORY } from "../../../apollo/category";
+import StyledTitle from "../../common/StyledTitle";
+import CustomCard from "../../common/CustomCard";
+import { useNavigate } from "react-router-dom";
 
 const onFinishFailed = (errorInfo: any) => {
   console.log("Failed:", errorInfo);
@@ -14,8 +14,9 @@ type FieldType = {
   name?: string;
 };
 
-const AddCategory = () => {
+const AddCategoryComponent = () => {
   const [addCategory, { loading }] = useMutation(CREATECATEGORY);
+  const navigate = useNavigate();
 
   const onFinish = (values: any) => {
     console.log("Success:", values);
@@ -26,6 +27,9 @@ const AddCategory = () => {
         },
       },
       refetchQueries: [{ query: CATEGORIES }],
+      onCompleted: () => {
+        navigate("/categories");
+      },
     });
   };
 
@@ -35,8 +39,8 @@ const AddCategory = () => {
 
   return (
     <>
-      <Title>Add Category</Title>
       <CustomCard>
+        <StyledTitle>Add Category</StyledTitle>
         <Form
           name="basic"
           labelCol={{ span: 24 }}
@@ -65,4 +69,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default AddCategoryComponent;

@@ -1,10 +1,12 @@
-import { Typography, Table, Tag, DatePickerProps, DatePicker } from "antd";
+import { Typography, Table, DatePickerProps, DatePicker } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useQuery } from "@apollo/client";
 import { useState } from "react";
-import { GET_SOLD_PRODUCTS } from "../graphql/sold-products";
-import Spinner from "../components/spinner";
-import { TopBar } from "./Home";
+import { GET_SOLD_PRODUCTS } from "../../../apollo/sold-products";
+import Spinner from "../../../components/common/spinner";
+import StyledTitle from "../../../components/common/StyledTitle";
+import TopBar from "../../../components/common/TopBar";
+import styled from "styled-components";
 
 interface DataType {
   id: number;
@@ -16,8 +18,6 @@ interface DataType {
     name: string;
   };
 }
-
-const { Title } = Typography;
 
 const SoldProducts = () => {
   const [dateFilter, setDateFilter] = useState<string>("");
@@ -57,6 +57,11 @@ const SoldProducts = () => {
       dataIndex: "salePrice",
       key: "salePrice",
     },
+    {
+      title: "quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
 
     {
       title: "createdAt",
@@ -92,7 +97,7 @@ const SoldProducts = () => {
     >
       <div>
         <TopBar>
-          <Title>Sold Products</Title>
+          <StyledTitle>Sold Products</StyledTitle>
           <div
             style={{
               display: "flex",
@@ -109,32 +114,43 @@ const SoldProducts = () => {
           loading={loading}
           scroll={{ x: 400 }}
           pagination={false}
+          footer={() =>
+            data?.soldProducts?.nodes.length > 0 && (
+              <Footer>
+                <FooterItem>Total: {data?.soldProducts?.total}</FooterItem>
+                <FooterItem>
+                  Original Total: {data?.soldProducts?.totalOriginalPrice}
+                </FooterItem>
+                <FooterItem>
+                  Profit:
+                  {data?.soldProducts?.total -
+                    data?.soldProducts?.totalOriginalPrice}
+                </FooterItem>
+              </Footer>
+            )
+          }
         />
       </div>
-
-      {data?.soldProducts?.nodes.length > 0 && (
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-            backgroundColor: "#eee",
-            padding: 20,
-            borderRadius: 3,
-          }}
-        >
-          <Typography.Text>Total: {data?.soldProducts?.total}</Typography.Text>
-          <Typography.Text>
-            Original Total: {data?.soldProducts?.totalOriginalPrice}
-          </Typography.Text>
-          <Typography.Text>
-            Profit:
-            {data?.soldProducts?.total - data?.soldProducts?.totalOriginalPrice}
-          </Typography.Text>
-        </div>
-      )}
     </div>
   );
 };
+
+const Footer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const FooterItem = styled.div`
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 7px;
+    background-color: #6e6e6e8c;
+    border-radius: 50%;
+  }
+`;
 
 export default SoldProducts;

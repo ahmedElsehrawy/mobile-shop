@@ -11,12 +11,16 @@ const CustomCard = ({ children }: Props) => {
 };
 
 const ResponsiveCard = styled(Card)`
-  border-radius: 10px;
+  box-shadow: #97979742 0px 2px 4px;
+  border-radius: 16px;
   padding: 20px;
 
   @media screen and (max-width: 768px) {
     padding: 8px;
-    border-radius: 6px;
+  }
+
+  @media screen and (max-width: 500px) {
+    padding: 0;
   }
 `;
 
